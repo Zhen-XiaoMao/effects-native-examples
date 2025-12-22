@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android' version '1.5.31'  // 兼容 Gradle 6.7.1
+}
+
+android {
+    namespace 'com.example.galacean_effects' // Android Gradle Plugin 7.0+ 需要
+    compileSdkVersion 29
+
+    defaultConfig {
+        applicationId "com.example.galacean_effects"
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // Kotlin 编译选项
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    // 其他配置保持不变...
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
+
+    sourceSets {
+        main.jniLibs.srcDirs = ['libs']
+    }
+}
+
+dependencies {
+    implementation(name: '../../libs/aar/galaceanEffects', ext: 'aar')
+    implementation "com.squareup.okhttp3:okhttp:3.10.0"
+    implementation 'com.alibaba:fastjson:1.2.76'
+
+    // Kotlin 依赖
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+}
