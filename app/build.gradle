@@ -45,7 +45,7 @@ android {
 }
 
 dependencies {
-    implementation(name: '../../libs/aar/galaceanEffects', ext: 'aar')
+    implementation project(':library')
     implementation "com.squareup.okhttp3:okhttp:3.10.0"
     implementation 'com.alibaba:fastjson:1.2.76'
 
