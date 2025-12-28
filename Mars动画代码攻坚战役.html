@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mars动画C++代码攻坚战役</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-box, .filter-select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .file-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .file-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #495057;
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .file-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-not-started {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+
+        .status-in-progress {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .file-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .btn-small {
+            padding: 5px 12px;
+            font-size: 0.8em;
+        }
+
+        .notes-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .notes-preview {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            min-height: 60px;
+            max-height: 120px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notes-preview:hover {
+            background: #e9ecef;
+        }
+
+        .notes-preview::after {
+            content: "📝 点击展开全屏编辑";
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            font-size: 0.7em;
+            color: #6c757d;
+            background: rgba(255,255,255,0.8);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .notes-fullscreen {
+            width: 100%;
+            height: calc(100vh - 200px);
+            min-height: 400px;
+            padding: 20px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            resize: none;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 20px;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: slideIn 0.3s;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            color: #495057;
+            margin: 0;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0 10px;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            background-color: #f8f9fa;
+        }
+
+        .modal-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .current-file-info {
+            background: #e7f3ff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .btn-large {
+            padding: 12px 24px;
+            font-size: 1.1em;
+        }
+
+        .category-section {
+            margin-bottom: 40px;
+        }
+
+        .category-title {
+            font-size: 1.5em;
+            color: #495057;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .file-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .modal-content {
+                margin: 10px;
+                padding: 20px;
+                width: calc(100% - 20px);
+            }
+            
+            .modal-actions {
+                justify-content: center;
+            }
+            
+            .notes-fullscreen {
+                height: calc(100vh - 250px);
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Mars动画代码攻坚战役</h1>
+            <p>系统化管理您的代码阅读进度，记录学习笔记</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="overallProgress"></div>
+            </div>
+            <div id="progressText">总体进度: 0/146 (0%)</div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="totalFiles">146</div>
+                <div>总文件数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedFiles">0</div>
+                <div>已完成</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="inProgressFiles">0</div>
+                <div>进行中</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalLines">26,127</div>
+                <div>总代码行</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="searchBox" class="search-box" placeholder="🔍 搜索文件名...">
+            <select id="categoryFilter" class="filter-select">
+                <option value="">所有分类</option>
+                <option value="model/sceneData">model/sceneData</option>
+                <option value="plugin/particle">plugin/particle</option>
+                <option value="plugin/sprite">plugin/sprite</option>
+                <option value="ri/backend/opengl">ri/backend/opengl</option>
+                <option value="sceneData/decoder">sceneData/decoder</option>
+                <option value="math">math</option>
+                <option value="player">player</option>
+                <option value="platform/android">platform/android</option>
+                <option value="video">video</option>
+                <option value="model/renderer">model/renderer</option>
+                <option value="filters">filters</option>
+                <option value="util">util</option>
+                <option value="ri/render">ri/render</option>
+                <option value="extensions">extensions</option>
+                <option value="load">load</option>
+                <option value="model">model</option>
+            </select>
+            <button class="btn btn-primary" onclick="exportProgress()">📤 导出进度</button>
+            <button class="btn btn-success" onclick="markAllCompleted()">✅ 全部标记为完成</button>
+            <button class="btn btn-warning" onclick="resetAllProgress()">🔄 重置进度</button>
+        </div>
+
+        <div id="fileContainer"></div>
+    </div>
+
+    <!-- 全屏笔记编辑模态框 -->
+    <div id="notesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📝 代码阅读笔记 - 全屏编辑</h2>
+                <span class="close" onclick="closeNotesModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="current-file-info" id="currentFileName"></div>
+                <textarea
+                    id="fullscreenNotesEditor"
+                    class="notes-fullscreen"
+                    placeholder="在这里记录详细的代码阅读笔记...
+
+建议记录内容：
+• 代码结构分析
+• 关键函数和类的作用
+• 算法逻辑理解
+• 难点和疑点
+• 学习心得和总结
+• 相关参考资料
+
+支持 Markdown 格式和代码高亮标记"
+                ></textarea>
+                <div class="modal-actions">
+                    <button class="btn btn-info btn-large" onclick="insertTimestamp()">⏰ 插入时间戳</button>
+                    <button class="btn btn-warning btn-large" onclick="clearNotes()">🗑️清空笔记</button>
+                    <button class="btn btn-primary btn-large" onclick="saveFullscreenNotes()">💾 保存笔记</button>
+                    <button class="btn btn-success btn-large" onclick="closeNotesModal()">✅ 完成编辑</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 文件数据
+        const fileData = [
+            {name: "ticker.cpp", path: "ticker.cpp", total: 53, code: 40, comment: 0, blank: 13, category: "other"},
+            {name: "filters/gaussian_filter_define.cpp", path: "filters/gaussian_filter_define.cpp", total: 220, code: 168, comment: 15, blank: 37, category: "filters"},
+            {name: "filters/delay_filter_define.cpp", path: "filters/delay_filter_define.cpp", total: 82, code: 56, comment: 7, blank: 19, category: "filters"},
+            {name: "filters/bloom_filter_define.cpp", path: "filters/bloom_filter_define.cpp", total: 226, code: 166, comment: 13, blank: 47, category: "filters"},
+            {name: "filters/distortion_filter_define.cpp", path: "filters/distortion_filter_define.cpp", total: 79, code: 53, comment: 7, blank: 19, category: "filters"},
+            {name: "filters/filter_utils.cpp", path: "filters/filter_utils.cpp", total: 71, code: 52, comment: 7, blank: 12, category: "filters"},
+            {name: "video/mars_video_texture.cpp", path: "video/mars_video_texture.cpp", total: 69, code: 53, comment: 7, blank: 9, category: "video"},
+            {name: "video/video_image_data.cpp", path: "video/video_image_data.cpp", total: 268, code: 222, comment: 9, blank: 37, category: "video"},
+            {name: "util/util.cpp", path: "util/util.cpp", total: 72, code: 53, comment: 5, blank: 14, category: "util"},
+            {name: "util/image_loader.cpp", path: "util/image_loader.cpp", total: 20, code: 15, comment: 1, blank: 4, category: "util"},
+            {name: "util/color_utils.cpp", path: "util/color_utils.cpp", total: 127, code: 97, comment: 6, blank: 24, category: "util"},
+            {name: "util/mars_thread.cpp", path: "util/mars_thread.cpp", total: 211, code: 181, comment: 6, blank: 24, category: "util"},
+            {name: "util/log_util.cpp", path: "util/log_util.cpp", total: 111, code: 72, comment: 25, blank: 14, category: "util"},
+            {name: "util/vfx_value_getter.cpp", path: "util/vfx_value_getter.cpp", total: 192, code: 173, comment: 0, blank: 19, category: "util"},
+            {name: "util/constant.cpp", path: "util/constant.cpp", total: 151, code: 134, comment: 5, blank: 12, category: "util"},
+            {name: "render/pass_texture_cache.cpp", path: "render/pass_texture_cache.cpp", total: 15, code: 3, comment: 7, blank: 5, category: "other"},
+            {name: "ri/utils.cpp", path: "ri/utils.cpp", total: 136, code: 119, comment: 5, blank: 12, category: "ri/render"},
+            {name: "ri/render_base.cpp", path: "ri/render_base.cpp", total: 121, code: 94, comment: 7, blank: 20, category: "ri/render"},
+            {name: "adapter/mars_video_player.cpp", path: "adapter/mars_video_player.cpp", total: 150, code: 101, comment: 3, blank: 46, category: "other"},
+            {name: "sceneData/mars_data_base.cpp", path: "sceneData/mars_data_base.cpp", total: 102, code: 85, comment: 0, blank: 17, category: "sceneData/decoder"},
+            {name: "sceneData/scene_data_decoder.cpp", path: "sceneData/scene_data_decoder.cpp", total: 283, code: 258, comment: 11, blank: 14, category: "sceneData/decoder"},
+            {name: "sceneData/scene_data_decoder_new.cpp", path: "sceneData/scene_data_decoder_new.cpp", total: 417, code: 368, comment: 8, blank: 41, category: "sceneData/decoder"},
+            {name: "math/camera.cpp", path: "math/camera.cpp", total: 103, code: 80, comment: 6, blank: 17, category: "math"},
+            {name: "math/transform.cpp", path: "math/transform.cpp", total: 220, code: 178, comment: 6, blank: 36, category: "math"},
+            {name: "math/mat4.cpp", path: "math/mat4.cpp", total: 133, code: 110, comment: 5, blank: 18, category: "math"},
+            {name: "math/math_util.cpp", path: "math/math_util.cpp", total: 744, code: 640, comment: 12, blank: 92, category: "math"},
+            {name: "math/quaternion.cpp", path: "math/quaternion.cpp", total: 91, code: 74, comment: 8, blank: 9, category: "math"},
+            {name: "math/translate.cpp", path: "math/translate.cpp", total: 131, code: 116, comment: 6, blank: 9, category: "math"},
+            {name: "math/mat3.cpp", path: "math/mat3.cpp", total: 57, code: 41, comment: 5, blank: 11, category: "math"},
+            {name: "math/vec4.cpp", path: "math/vec4.cpp", total: 84, code: 64, comment: 5, blank: 15, category: "math"},
+            {name: "math/mersenne_twister.cpp", path: "math/mersenne_twister.cpp", total: 102, code: 80, comment: 1, blank: 21, category: "math"},
+            {name: "math/vec2.cpp", path: "math/vec2.cpp", total: 59, code: 40, comment: 5, blank: 14, category: "math"},
+            {name: "math/vec3.cpp", path: "math/vec3.cpp", total: 75, code: 54, comment: 5, blank: 16, category: "math"},
+            {name: "extensions/mars_ext_position_path_modifier.cpp", path: "extensions/mars_ext_position_path_modifier.cpp", total: 172, code: 137, comment: 24, blank: 11, category: "extensions"},
+            {name: "load/loader.cpp", path: "load/loader.cpp", total: 82, code: 68, comment: 1, blank: 13, category: "load"},
+            {name: "model/common.cpp", path: "model/common.cpp", total: 12, code: 3, comment: 5, blank: 4, category: "model"},
+            {name: "model/model_plugin.cpp", path: "model/model_plugin.cpp", total: 92, code: 60, comment: 6, blank: 26, category: "model"},
+            {name: "model/model_vfx_item.cpp", path: "model/model_vfx_item.cpp", total: 152, code: 129, comment: 8, blank: 15, category: "model"},
+            {name: "model/model_tree_plugin.cpp", path: "model/model_tree_plugin.cpp", total: 47, code: 31, comment: 6, blank: 10, category: "model"},
+            {name: "player/composition.cpp", path: "player/composition.cpp", total: 341, code: 284, comment: 15, blank: 42, category: "player"},
+            {name: "player/mars_player_mgr.cpp", path: "player/mars_player_mgr.cpp", total: 539, code: 434, comment: 1, blank: 104, category: "player"},
+            {name: "player/mars_native_player.cpp", path: "player/mars_native_player.cpp", total: 191, code: 167, comment: 1, blank: 23, category: "player"},
+            {name: "player/vfx_item.cpp", path: "player/vfx_item.cpp", total: 153, code: 140, comment: 1, blank: 12, category: "player"},
+            {name: "player/mars_player.cpp", path: "player/mars_player.cpp", total: 453, code: 382, comment: 16, blank: 55, category: "player"},
+            {name: "player/plugin_system.cpp", path: "player/plugin_system.cpp", total: 121, code: 92, comment: 11, blank: 18, category: "player"},
+            {name: "player/comp_vfx_item.cpp", path: "player/comp_vfx_item.cpp", total: 215, code: 196, comment: 1, blank: 18, category: "player"},
+            {name: "player/mars_native_data.cpp", path: "player/mars_native_data.cpp", total: 173, code: 151, comment: 2, blank: 20, category: "player"},
+            {name: "model/renderer/m_light.cpp", path: "model/renderer/m_light.cpp", total: 121, code: 89, comment: 7, blank: 25, category: "model/renderer"},
+            {name: "model/renderer/m_transform.cpp", path: "model/renderer/m_transform.cpp", total: 65, code: 42, comment: 6, blank: 17, category: "model/renderer"},
+            {name: "model/renderer/m_skybox.cpp", path: "model/renderer/m_skybox.cpp", total: 152, code: 104, comment: 10, blank: 38, category: "model/renderer"},
+            {name: "model/renderer/m_mesh.cpp", path: "model/renderer/m_mesh.cpp", total: 402, code: 306, comment: 14, blank: 82, category: "model/renderer"},
+            {name: "model/renderer/m_scene_manager.cpp", path: "model/renderer/m_scene_manager.cpp", total: 143, code: 102, comment: 12, blank: 29, category: "model/renderer"},
+            {name: "model/renderer/m_geometry.cpp", path: "model/renderer/m_geometry.cpp", total: 58, code: 37, comment: 5, blank: 16, category: "model/renderer"},
+            {name: "model/renderer/m_entity.cpp", path: "model/renderer/m_entity.cpp", total: 37, code: 21, comment: 5, blank: 11, category: "model/renderer"},
+            {name: "model/renderer/m_camera.cpp", path: "model/renderer/m_camera.cpp", total: 107, code: 77, comment: 6, blank: 24, category: "model/renderer"},
+            {name: "model/shader/shader_libs.cpp", path: "model/shader/shader_libs.cpp", total: 64, code: 45, comment: 6, blank: 13, category: "model/renderer"},
+            {name: "model/utility/skybox_utils.cpp", path: "model/utility/skybox_utils.cpp", total: 47, code: 29, comment: 6, blank: 12, category: "model/renderer"},
+            {name: "model/sceneData/decoder/model_content_decoder.cpp", path: "model/sceneData/decoder/model_content_decoder.cpp", total: 1253, code: 1086, comment: 12, blank: 155, category: "model/sceneData"},
+            {name: "model/sceneData/data/model_data.cpp", path: "model/sceneData/data/model_data.cpp", total: 68, code: 55, comment: 6, blank: 7, category: "model/sceneData"},
+            {name: "model/renderer/animation/m_animation.cpp", path: "model/renderer/animation/m_animation.cpp", total: 217, code: 168, comment: 6, blank: 43, category: "model/renderer"},
+            {name: "model/renderer/animation/interpolation_sampler.cpp", path: "model/renderer/animation/interpolation_sampler.cpp", total: 263, code: 176, comment: 9, blank: 78, category: "model/renderer"},
+            {name: "model/renderer/animation/m_skin.cpp", path: "model/renderer/animation/m_skin.cpp", total: 101, code: 70, comment: 13, blank: 18, category: "model/renderer"},
+            {name: "model/renderer/material/m_material_skybox.cpp", path: "model/renderer/material/m_material_skybox.cpp", total: 63, code: 37, comment: 6, blank: 20, category: "model/renderer"},
+            {name: "model/renderer/material/m_material_base.cpp", path: "model/renderer/material/m_material_base.cpp", total: 138, code: 103, comment: 6, blank: 29, category: "model/renderer"},
+            {name: "model/renderer/material/m_material_pbr.cpp", path: "model/renderer/material/m_material_pbr.cpp", total: 165, code: 117, comment: 6, blank: 42, category: "model/renderer"},
+            {name: "extensions/morph/custom_morph.cpp", path: "extensions/morph/custom_morph.cpp", total: 74, code: 57, comment: 7, blank: 10, category: "extensions"},
+            {name: "extensions/jni/mars_ext_position_path_modifier_jni.cpp", path: "extensions/jni/mars_ext_position_path_modifier_jni.cpp", total: 113, code: 94, comment: 3, blank: 16, category: "extensions"},
+            {name: "extensions/jni/mars_ext_custom_morph_jni.cpp", path: "extensions/jni/mars_ext_custom_morph_jni.cpp", total: 68, code: 58, comment: 3, blank: 7, category: "extensions"},
+            {name: "math/value/value_getter_utils.cpp", path: "math/value/value_getter_utils.cpp", total: 81, code: 60, comment: 5, blank: 16, category: "math"},
+            {name: "math/value/bezier_value_getter.cpp", path: "math/value/bezier_value_getter.cpp", total: 40, code: 27, comment: 5, blank: 8, category: "math"},
+            {name: "math/value/curve_value_getter.cpp", path: "math/value/curve_value_getter.cpp", total: 146, code: 113, comment: 5, blank: 28, category: "math"},
+            {name: "math/value/line_segments_value_getter.cpp", path: "math/value/line_segments_value_getter.cpp", total: 146, code: 114, comment: 6, blank: 26, category: "math"},
+            {name: "math/value/static_value_getter.cpp", path: "math/value/static_value_getter.cpp", total: 65, code: 46, comment: 7, blank: 12, category: "math"},
+            {name: "math/value/random_value_getter.cpp", path: "math/value/random_value_getter.cpp", total: 82, code: 54, comment: 6, blank: 22, category: "math"},
+            {name: "math/value/linear_value_getter.cpp", path: "math/value/linear_value_getter.cpp", total: 57, code: 41, comment: 5, blank: 11, category: "math"},
+            {name: "math/value/gradient_value_getter.cpp", path: "math/value/gradient_value_getter.cpp", total: 56, code: 40, comment: 5, blank: 11, category: "math"},
+            {name: "math/value/path_value_getter.cpp", path: "math/value/path_value_getter.cpp", total: 87, code: 64, comment: 6, blank: 17, category: "math"},
+            {name: "sceneData/decoder/sprite_content_decoder.cpp", path: "sceneData/decoder/sprite_content_decoder.cpp", total: 203, code: 172, comment: 1, blank: 30, category: "sceneData/decoder"},
+            {name: "sceneData/decoder/common_properties_decoder.cpp", path: "sceneData/decoder/common_properties_decoder.cpp", total: 735, code: 621, comment: 7, blank: 107, category: "sceneData/decoder"},
+            {name: "sceneData/decoder/interact_content_decoder.cpp", path: "sceneData/decoder/interact_content_decoder.cpp", total: 87, code: 71, comment: 0, blank: 16, category: "sceneData/decoder"},
+            {name: "sceneData/decoder/particle_content_decoder.cpp", path: "sceneData/decoder/particle_content_decoder.cpp", total: 646, code: 558, comment: 7, blank: 81, category: "sceneData/decoder"},
+            {name: "sceneData/decoder/plugin_content_decoder.cpp", path: "sceneData/decoder/plugin_content_decoder.cpp", total: 129, code: 103, comment: 6, blank: 20, category: "sceneData/decoder"},
+            {name: "sceneData/decoder/item_decoder.cpp", path: "sceneData/decoder/item_decoder.cpp", total: 251, code: 212, comment: 8, blank: 31, category: "sceneData/decoder"},
+            {name: "sceneData/decoder/filter_content_decoder.cpp", path: "sceneData/decoder/filter_content_decoder.cpp", total: 199, code: 156, comment: 7, blank: 36, category: "sceneData/decoder"},
+            {name: "sceneData/decoder/composition_decoder.cpp", path: "sceneData/decoder/composition_decoder.cpp", total: 181, code: 147, comment: 6, blank: 28, category: "sceneData/decoder"},
+            {name: "sceneData/data/sprite_mesh_geometry.cpp", path: "sceneData/data/sprite_mesh_geometry.cpp", total: 56, code: 42, comment: 7, blank: 7, category: "sceneData/decoder"},
+            {name: "ri/render/render_pass.cpp", path: "ri/render/render_pass.cpp", total: 224, code: 179, comment: 9, blank: 36, category: "ri/render"},
+            {name: "ri/render/render_pass_color_attachment.cpp", path: "ri/render/render_pass_color_attachment.cpp", total: 61, code: 42, comment: 5, blank: 14, category: "ri/render"},
+            {name: "ri/render/render_frame_internal.cpp", path: "ri/render/render_frame_internal.cpp", total: 123, code: 93, comment: 14, blank: 16, category: "ri/render"},
+            {name: "ri/render/render_frame.cpp", path: "ri/render/render_frame.cpp", total: 75, code: 52, comment: 9, blank: 14, category: "ri/render"},
+            {name: "ri/render/mars_renderer.cpp", path: "ri/render/mars_renderer.cpp", total: 88, code: 61, comment: 9, blank: 18, category: "ri/render"},
+            {name: "ri/render/mars_renderer_ext.cpp", path: "ri/render/mars_renderer_ext.cpp", total: 101, code: 68, comment: 12, blank: 21, category: "ri/render"},
+            {name: "ri/render/mars_mesh.cpp", path: "ri/render/mars_mesh.cpp", total: 74, code: 53, comment: 6, blank: 15, category: "ri/render"},
+            {name: "ri/render/mars_material.cpp", path: "ri/render/mars_material.cpp", total: 243, code: 201, comment: 10, blank: 32, category: "ri/render"},
+            {name: "ri/render/mars_texture.cpp", path: "ri/render/mars_texture.cpp", total: 48, code: 29, comment: 7, blank: 12, category: "ri/render"},
+            {name: "ri/render/mars_player_render_frame.cpp", path: "ri/render/mars_player_render_frame.cpp", total: 432, code: 356, comment: 11, blank: 65, category: "ri/render"},
+            {name: "ri/render/mars_geometry.cpp", path: "ri/render/mars_geometry.cpp", total: 280, code: 227, comment: 14, blank: 39, category: "ri/render"},
+            {name: "ri/backend/opengl/gl_program.cpp", path: "ri/backend/opengl/gl_program.cpp", total: 230, code: 188, comment: 9, blank: 33, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_api.cpp", path: "ri/backend/opengl/gl_api.cpp", total: 928, code: 773, comment: 7, blank: 148, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_texture.cpp", path: "ri/backend/opengl/gl_texture.cpp", total: 224, code: 183, comment: 6, blank: 35, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_render_buffer.cpp", path: "ri/backend/opengl/gl_render_buffer.cpp", total: 38, code: 27, comment: 5, blank: 6, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_gpu_buffer.cpp", path: "ri/backend/opengl/gl_gpu_buffer.cpp", total: 61, code: 43, comment: 6, blank: 12, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_gpu_renderer.cpp", path: "ri/backend/opengl/gl_gpu_renderer.cpp", total: 47, code: 31, comment: 6, blank: 10, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_geometry.cpp", path: "ri/backend/opengl/gl_geometry.cpp", total: 83, code: 56, comment: 9, blank: 18, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_frame_buffer.cpp", path: "ri/backend/opengl/gl_frame_buffer.cpp", total: 171, code: 122, comment: 18, blank: 31, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_material.cpp", path: "ri/backend/opengl/gl_material.cpp", total: 85, code: 66, comment: 6, blank: 13, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_shader_library.cpp", path: "ri/backend/opengl/gl_shader_library.cpp", total: 200, code: 165, comment: 5, blank: 30, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_gpu_capability.cpp", path: "ri/backend/opengl/gl_gpu_capability.cpp", total: 102, code: 78, comment: 6, blank: 18, category: "ri/backend/opengl"},
+            {name: "ri/backend/opengl/gl_state.cpp", path: "ri/backend/opengl/gl_state.cpp", total: 148, code: 106, comment: 6, blank: 36, category: "ri/backend/opengl"},
+            {name: "plugin/tree/tree_vfx_item.cpp", path: "plugin/tree/tree_vfx_item.cpp", total: 101, code: 82, comment: 5, blank: 14, category: "other"},
+            {name: "plugin/tree/tree_item.cpp", path: "plugin/tree/tree_item.cpp", total: 96, code: 76, comment: 9, blank: 11, category: "other"},
+            {name: "plugin/arTrack/ar_track_vfx_item.cpp", path: "plugin/arTrack/ar_track_vfx_item.cpp", total: 196, code: 159, comment: 15, blank: 22, category: "other"},
+            {name: "plugin/arTrack/ar_track_loader.cpp", path: "plugin/arTrack/ar_track_loader.cpp", total: 30, code: 17, comment: 7, blank: 6, category: "other"},
+            {name: "plugin/cal/calculate_vfx_item.cpp", path: "plugin/cal/calculate_vfx_item.cpp", total: 42, code: 31, comment: 1, blank: 10, category: "other"},
+            {name: "plugin/cal/calculate_item.cpp", path: "plugin/cal/calculate_item.cpp", total: 61, code: 53, comment: 0, blank: 8, category: "other"},
+            {name: "plugin/cal/calculate_group.cpp", path: "plugin/cal/calculate_group.cpp", total: 164, code: 147, comment: 0, blank: 17, category: "other"},
+            {name: "plugin/cal/calculate_loader.cpp", path: "plugin/cal/calculate_loader.cpp", total: 169, code: 156, comment: 1, blank: 12, category: "other"},
+            {name: "plugin/sprite/sprite_loader.cpp", path: "plugin/sprite/sprite_loader.cpp", total: 95, code: 73, comment: 6, blank: 16, category: "plugin/sprite"},
+            {name: "plugin/sprite/sprite_vfx_item.cpp", path: "plugin/sprite/sprite_vfx_item.cpp", total: 85, code: 62, comment: 10, blank: 13, category: "plugin/sprite"},
+            {name: "plugin/sprite/sprite_group.cpp", path: "plugin/sprite/sprite_group.cpp", total: 626, code: 596, comment: 6, blank: 24, category: "plugin/sprite"},
+            {name: "plugin/sprite/sprite_item.cpp", path: "plugin/sprite/sprite_item.cpp", total: 695, code: 604, comment: 3, blank: 88, category: "plugin/sprite"},
+            {name: "plugin/sprite/sprite_mesh.cpp", path: "plugin/sprite/sprite_mesh.cpp", total: 582, code: 497, comment: 21, blank: 64, category: "plugin/sprite"},
+            {name: "plugin/sprite/filter_sprite_vfx_item.cpp", path: "plugin/sprite/filter_sprite_vfx_item.cpp", total: 77, code: 56, comment: 8, blank: 13, category: "plugin/sprite"},
+            {name: "plugin/interact/interact_vfx_item.cpp", path: "plugin/interact/interact_vfx_item.cpp", total: 35, code: 27, comment: 0, blank: 8, category: "other"},
+            {name: "plugin/particle/particle_loader.cpp", path: "plugin/particle/particle_loader.cpp", total: 82, code: 60, comment: 9, blank: 13, category: "plugin/particle"},
+            {name: "plugin/particle/particle_system.cpp", path: "plugin/particle/particle_system.cpp", total: 854, code: 720, comment: 19, blank: 115, category: "plugin/particle"},
+            {name: "plugin/particle/particle_vfx_item.cpp", path: "plugin/particle/particle_vfx_item.cpp", total: 94, code: 67, comment: 9, blank: 18, category: "plugin/particle"},
+            {name: "plugin/particle/link_chain.cpp", path: "plugin/particle/link_chain.cpp", total: 120, code: 97, comment: 8, blank: 15, category: "plugin/particle"},
+            {name: "plugin/particle/particle_mesh.cpp", path: "plugin/particle/particle_mesh.cpp", total: 864, code: 757, comment: 13, blank: 94, category: "plugin/particle"},
+            {name: "plugin/particle/shape/geometry_2d.cpp", path: "plugin/particle/shape/geometry_2d.cpp", total: 82, code: 68, comment: 7, blank: 7, category: "plugin/particle"},
+            {name: "plugin/particle/shape/donut.cpp", path: "plugin/particle/shape/donut.cpp", total: 27, code: 11, comment: 5, blank: 11, category: "plugin/particle"},
+            {name: "plugin/particle/shape/cone.cpp", path: "plugin/particle/shape/cone.cpp", total: 42, code: 22, comment: 6, blank: 14, category: "plugin/particle"},
+            {name: "plugin/particle/shape/shape.cpp", path: "plugin/particle/shape/shape.cpp", total: 100, code: 78, comment: 6, blank: 16, category: "plugin/particle"},
+            {name: "plugin/particle/shape/earcut.cpp", path: "plugin/particle/shape/earcut.cpp", total: 605, code: 444, comment: 50, blank: 111, category: "plugin/particle"},
+            {name: "plugin/particle/shape/sphere.cpp", path: "plugin/particle/shape/sphere.cpp", total: 56, code: 31, comment: 5, blank: 20, category: "plugin/particle"},
+            {name: "platform/egl/mars_surface.cpp", path: "platform/egl/mars_surface.cpp", total: 13, code: 3, comment: 5, blank: 5, category: "platform/android"},
+            {name: "platform/android/mars_offscreen_surface.cpp", path: "platform/android/mars_offscreen_surface.cpp", total: 109, code: 98, comment: 0, blank: 11, category: "platform/android"},
+            {name: "platform/android/android_impl.cpp", path: "platform/android/android_impl.cpp", total: 109, code: 95, comment: 1, blank: 13, category: "platform/android"},
+            {name: "platform/android/mars_player_jni.cpp", path: "platform/android/mars_player_jni.cpp", total: 268, code: 216, comment: 3, blank: 49, category: "platform/android"},
+            {name: "platform/android/egl_window_context.cpp", path: "platform/android/egl_window_context.cpp", total: 182, code: 154, comment: 3, blank: 25, category: "platform/android"},
+            {name: "platform/android/cov_util.cpp", path: "platform/android/cov_util.cpp", total: 21, code: 16, comment: 0, blank: 5, category: "platform/android"},
+            {name: "platform/android/jni_bridge.cpp", path: "platform/android/jni_bridge.cpp", total: 173, code: 145, comment: 2, blank: 26, category: "platform/android"},
+            {name: "platform/android/mars_surface_android.cpp", path: "platform/android/mars_surface_android.cpp", total: 80, code: 63, comment: 0, blank: 17, category: "platform/android"},
+            {name: "platform/android/egl_pbuffer_context.cpp", path: "platform/android/egl_pbuffer_context.cpp", total: 120, code: 103, comment: 1, blank: 16, category: "platform/android"},
+            {name: "platform/android/jni_java_impls/jni_mars_native_resource_loader.cpp", path: "platform/android/jni_java_impls/jni_mars_native_resource_loader.cpp", total: 52, code: 42, comment: 3, blank: 7, category: "platform/android"},
+            {name: "video/android/video_buffer_processor.cpp", path: "video/android/video_buffer_processor.cpp", total: 270, code: 233, comment: 19, blank: 18, category: "video"}
+        ];
+
+        let readingProgress = JSON.parse(localStorage.getItem('cppReadingProgress')) || {};
+        let currentEditingFile = null;
+
+        // 初始化页面
+        function init() {
+            renderFileCards();
+            updateStats();
+            setupEventListeners();
+        }
+
+        // 渲染文件卡片
+        function renderFileCards() {
+            const container = document.getElementById('fileContainer');
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            // 按分类分组
+            const categories = {};
+            fileData.forEach(file => {
+                if (!categories[file.category]) {
+                    categories[file.category] = [];
+                }
+                categories[file.category].push(file);
+            });
+
+            let html = '';
+            
+            Object.keys(categories).sort().forEach(category => {
+                if (categoryFilter && category !== categoryFilter) return;
+                
+                const files = categories[category].filter(file =>
+                    file.name.toLowerCase().includes(searchTerm) ||
+                    file.path.toLowerCase().includes(searchTerm)
+                );
+                
+                if (files.length === 0) return;
+                
+                html += `<div class="category-section">
+                    <h2 class="category-title">${category} (${files.length} 文件)</h2>
+                    <div class="file-grid">`;
+                
+                files.forEach(file => {
+                    const progress = readingProgress[file.path] || { status: 'not-started', notes: '' };
+                    const statusClass = `status-${progress.status}`;
+                    const statusText = {
+                        'not-started': '未开始',
+                        'in-progress': '进行中',
+                        'completed': '已完成'
+                    }[progress.status];
+                    
+                    // 创建安全的data属性值
+                    const safeFilePath = file.path.replace(/"/g, '&quot;');
+                    
+                    html += `
+                        <div class="file-card">
+                            <div class="file-header">
+                                <div class="file-name" title="${file.path}">${file.name}</div>
+                                <div class="file-status ${statusClass}">${statusText}</div>
+                            </div>
+                            
+                            <div class="file-stats">
+                                <div class="stat-item">
+                                    <span class="stat-value">${file.total}</span>
+                                    <span class="stat-label">总行数</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">${file.code}</span>
+                                    <span class="stat-label">代码行</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">${file.comment}</span>
+                                    <span class="stat-label">注释行</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">${file.blank}</span>
+                                    <span class="stat-label">空行</span>
+                                </div>
+                            </div>
+                            
+                            <div class="file-actions">
+                                <button class="btn btn-primary btn-small" onclick="changeStatus('${safeFilePath}', 'not-started')">未开始</button>
+                                <button class="btn btn-warning btn-small" onclick="changeStatus('${safeFilePath}', 'in-progress')">进行中</button>
+                                <button class="btn btn-success btn-small" onclick="changeStatus('${safeFilePath}', 'completed')">完成</button>
+                            </div>
+                            
+                            <div class="notes-section">
+                                <div class="notes-preview" onclick="openNotesModal('${safeFilePath}')" data-file="${safeFilePath}">
+                                    ${progress.notes ? progress.notes.substring(0, 200) + (progress.notes.length > 200 ? '...' : '') : '暂无笔记，点击展开全屏编辑...'}
+                                </div>
+                                <textarea class="notes-textarea" placeholder="在这里记录阅读笔记..." 
+                                    style="display: none;"
+                                    data-file="${safeFilePath}"
+                                    onchange="saveNotes('${safeFilePath}', this.value)"
+                                    onclick="event.stopPropagation()">${progress.notes || ''}</textarea>
+                                <button class="btn btn-primary save-btn" onclick="saveNotes('${safeFilePath}', document.querySelector('[data-file=\"${safeFilePath}\"]').value)">💾 保存笔记</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // 设置事件监听
+        function setupEventListeners() {
+            document.getElementById('searchBox').addEventListener('input', renderFileCards);
+            document.getElementById('categoryFilter').addEventListener('change', renderFileCards);
+            
+            // 模态框点击外部关闭
+            document.getElementById('notesModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeNotesModal();
+                }
+            });
+            
+            // ESC键关闭模态框
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeNotesModal();
+                }
+            });
+        }
+
+        // 打开全屏笔记编辑模态框
+        function openNotesModal(filePath) {
+            const file = fileData.find(f => f.path === filePath);
+            if (!file) return;
+            
+            currentEditingFile = filePath;
+            
+            // 设置当前文件名
+            document.getElementById('currentFileName').textContent = `📁 ${file.path}`;
+            
+            // 加载现有笔记
+            const progress = readingProgress[filePath] || { notes: '' };
+            document.getElementById('fullscreenNotesEditor').value = progress.notes || '';
+            
+            // 显示模态框
+            const modal = document.getElementById('notesModal');
+            modal.classList.add('show');
+            
+            // 聚焦到编辑器
+            setTimeout(() => {
+                document.getElementById('fullscreenNotesEditor').focus();
+            }, 300);
+        }
+
+        // 关闭全屏笔记编辑模态框
+        function closeNotesModal() {
+            const modal = document.getElementById('notesModal');
+            modal.classList.remove('show');
+            currentEditingFile = null;
+        }
+
+        // 在全屏编辑器中插入时间戳
+        function insertTimestamp() {
+            const editor = document.getElementById('fullscreenNotesEditor');
+            const timestamp = `\n\n## 📅 ${new Date().toLocaleString('zh-CN')}\n\n`;
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const value = editor.value;
+            
+            editor.value = value.substring(0, start) + timestamp + value.substring(end);
+            editor.selectionStart = editor.selectionEnd = start + timestamp.length;
+            editor.focus();
+        }
+
+        // 清空全屏编辑器内容
+        function clearNotes() {
+            if (confirm('确定要清空当前笔记吗？此操作不可恢复！')) {
+                document.getElementById('fullscreenNotesEditor').value = '';
+            }
+        }
+
+        // 保存全屏编辑器中的笔记
+        function saveFullscreenNotes() {
+            if (!currentEditingFile) return;
+            
+            const notes = document.getElementById('fullscreenNotesEditor').value;
+            saveNotes(currentEditingFile, notes);
+            
+            // 视觉反馈
+            const saveBtn = event.target;
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = '✅ 已保存';
+            saveBtn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                saveBtn.textContent = originalText;
+                saveBtn.style.background = '';
+            }, 1000);
+        }
+
+        // 改变阅读状态
+        function changeStatus(filePath, status) {
+            if (!readingProgress[filePath]) {
+                readingProgress[filePath] = { status: 'not-started', notes: '' };
+            }
+            readingProgress[filePath].status = status;
+            saveProgress();
+            renderFileCards();
+            updateStats();
+        }
+
+        // 保存笔记
+        function saveNotes(filePath, notes) {
+            if (!readingProgress[filePath]) {
+                readingProgress[filePath] = { status: 'not-started', notes: '' };
+            }
+            readingProgress[filePath].notes = notes;
+            saveProgress();
+            
+            // 如果当前在编辑这个文件的笔记，也更新全屏编辑器
+            if (currentEditingFile === filePath) {
+                document.getElementById('fullscreenNotesEditor').value = notes;
+            }
+            
+            // 重新渲染以更新预览
+            renderFileCards();
+        }
+
+        // 保存进度到本地存储
+        function saveProgress() {
+            localStorage.setItem('cppReadingProgress', JSON.stringify(readingProgress));
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const total = fileData.length;
+            const completed = Object.values(readingProgress).filter(p => p.status === 'completed').length;
+            const inProgress = Object.values(readingProgress).filter(p => p.status === 'in-progress').length;
+            const progress = total > 0 ? Math.round(((completed + inProgress * 0.5) / total) * 100) : 0;
+            
+            document.getElementById('totalFiles').textContent = total;
+            document.getElementById('completedFiles').textContent = completed;
+            document.getElementById('inProgressFiles').textContent = inProgress;
+            document.getElementById('totalLines').textContent = '26,127';
+            
+            document.getElementById('overallProgress').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `总体进度: ${completed + inProgress}/${total} (${progress}%)`;
+        }
+
+        // 导出进度
+        function exportProgress() {
+            const data = {
+                exportTime: new Date().toISOString(),
+                summary: {
+                    total: fileData.length,
+                    completed: Object.values(readingProgress).filter(p => p.status === 'completed').length,
+                    inProgress: Object.values(readingProgress).filter(p => p.status === 'in-progress').length
+                },
+                progress: readingProgress,
+                files: fileData
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cpp-reading-progress-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 全部标记为完成
+        function markAllCompleted() {
+            if (confirm('确定要将所有文件标记为已完成吗？')) {
+                fileData.forEach(file => {
+                    if (!readingProgress[file.path]) {
+                        readingProgress[file.path] = { status: 'completed', notes: '' };
+                    } else {
+                        readingProgress[file.path].status = 'completed';
+                    }
+                });
+                saveProgress();
+                renderFileCards();
+                updateStats();
+            }
+        }
+
+        // 重置所有进度
+        function resetAllProgress() {
+            if (confirm('确定要重置所有阅读进度吗？此操作不可恢复！')) {
+                readingProgress = {};
+                saveProgress();
+                renderFileCards();
+                updateStats();
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
