@@ -62,41 +62,54 @@ class GEPlayDemo : Activity() {
 
     /**
      * 创建并初始化特效播放器
+     * @param effectIndex 特效索引，对应EFFECT_URLS中的位置
      */
     private fun createEffectPlayer(effectIndex: Int) {
-        // getOrNull 防止索引越界
+        // 安全获取特效URL，防止索引越界导致崩溃
         val url = EFFECT_URLS.getOrNull(effectIndex) ?: return
 
-        // 如果该位置已有播放器，先销毁旧实例
+        // 如果该位置已有播放器实例，先销毁避免资源泄漏
         effectPlayers[effectIndex]?.destroy()
 
+        // 配置播放器参数
         val playerParameters = GEPlayer.GEPlayerParams().apply {
-            this.url = url
-            // also 语法糖：创建 Bitmap 后立即在闭图块内进行 Canvas 绘制并返回该对象
-            this.downgradeImage = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888).also {
-                Canvas(it).drawColor(getRandomColor())
+            this.url = url  // 设置特效资源URL
+
+            // 创建降级显示的随机颜色图片（128x128 ARGB格式）
+            // also作用域函数：在创建Bitmap后立即进行Canvas绘制，最后返回Bitmap对象
+            this.downgradeImage = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888).also { bitmap ->
+                Canvas(bitmap).drawColor(getRandomColor())  // 填充随机背景色
             }
         }
 
+        // 创建播放器实例并保存到集合中
         val effectPlayer = GEPlayer(this, playerParameters)
         effectPlayers[effectIndex] = effectPlayer
 
-        // 使用弱引用防止异步回调导致内存泄漏
+        // 使用弱引用持有Activity，防止异步回调导致的内存泄漏
         val weakActivity = WeakReference(this)
+
+        // 加载特效场景，完成后进行UI绑定
         effectPlayer.loadScene { loadSuccess, errorMessage ->
+            // 从弱引用获取Activity，若已被回收则直接返回
             val activity = weakActivity.get() ?: return@loadScene
 
+            // 加载失败时记录日志并提示用户
             if (!loadSuccess) {
                 Log.e(TAG, "加载失败: ${EFFECT_DISPLAY_NAMES[effectIndex]}, $errorMessage")
                 activity.toast("${EFFECT_DISPLAY_NAMES[effectIndex]} 加载失败")
                 return@loadScene
             }
 
-            // 使用 let 安全调用：仅在 container 不为空时执行
+            // 安全获取容器并绑定播放器视图
+            // let作用域函数：仅在container不为空时执行内部逻辑
             activity.effectContainers.getOrNull(effectIndex)?.let { container ->
-                container.removeAllViews()
-                // 调用自定义的布局扩展函数
+                container.removeAllViews()  // 清空容器原有内容
+
+                // 应用自定义布局到容器（扩展函数）
                 effectPlayer.applyLayout(container)
+
+                // 将播放器添加到容器中进行显示
                 container.addView(effectPlayer)
             }
         }
@@ -156,18 +169,19 @@ class GEPlayDemo : Activity() {
     private fun playAllEffects() {
         toast("开始加载所有效果...")
 
-        // 遍历所有索引进行加载
+        // 遍历所有特效索引，创建未初始化的播放器
         EFFECT_URLS.indices.forEach { index ->
             if (effectPlayers[index] == null) createEffectPlayer(index)
         }
 
-        // 延迟检查播放状态
+        // 延迟2.5秒检查播放状态
         mainHandler.postDelayed({
-            // 使用 count 判断是否有成功启动播放的实例
+            // 统计并尝试播放所有播放器
             val hasPlayed = effectPlayers.values.count { player ->
-                player.play(0) { _, _ -> }
-                true
+                player.play(0) { _, _ -> }  // 播放特效（忽略回调）
+                true  // 计数+1
             } > 0
+
             toast(if (hasPlayed) "开始播放所有效果" else "没有可播放的效果")
         }, 2500)
     }

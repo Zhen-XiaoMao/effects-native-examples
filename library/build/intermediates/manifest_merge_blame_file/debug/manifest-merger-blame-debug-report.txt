@@ -4,8 +4,8 @@
 4
 5    <uses-sdk
 6        android:minSdkVersion="14"
-6-->/Users/jason/AndroidStudioProjects/渲染/effects-native-examples/library/src/main/AndroidManifest.xml
+6-->/Users/jason/AndroidStudioProjects/effects-native-examples/library/src/main/AndroidManifest.xml
 7        android:targetSdkVersion="28" />
-7-->/Users/jason/AndroidStudioProjects/渲染/effects-native-examples/library/src/main/AndroidManifest.xml
+7-->/Users/jason/AndroidStudioProjects/effects-native-examples/library/src/main/AndroidManifest.xml
 8
 9</manifest>

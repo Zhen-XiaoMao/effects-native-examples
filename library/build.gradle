@@ -43,6 +43,7 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'adapter_oss/src/main/java'
+        main.java.srcDirs += 'src/main/java'
     }
 
     libraryVariants.all { variant ->
